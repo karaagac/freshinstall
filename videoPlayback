@@ -1,0 +1,5 @@
+After fresh install, 1080p  videos didnt play. 
+do this to solve that problem
+
+Go to Preferences ( which for me says Simple Preferences at the top of that window), 
+Video button/tab, at the Output section and to the right, select that drop down option and select " Xvideo output (XCB) and see if that solves it.
