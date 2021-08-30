@@ -1,0 +1,11 @@
+alias d="cd ~/Desktop"
+alias videos="cd ~/Videos"
+alias doc="cd ~/Documents"
+
+
+
+alias bashrc="vim ~/.bashrc"
+alias vimrc="vim ~/.vimrc"
+
+
+alias mpv="mpv --hwdec --opengl-backend=wayland"
