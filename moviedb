@@ -1,0 +1,14 @@
+## add these functions to ~/.bashrc or ~/.zshrc
+
+cfg-moviedb() { $EDITOR ~/.moviedb ;}
+# e.g
+# /media/gotbletu/Videos/Batman Begins.mp4  ;; movie dccomics pg13 superheroes
+# /media/gotbletu/Videos/Star Wars.mkv      ;; scifi fantasy vader skywalker lightsaber
+
+fzf-moviedb() {
+  selected="$(cat ~/.moviedb | sed '/^$/d' | sort -n | fzf -e -i )"
+  # remove tags, leading and trailing spaces, also no newline
+  xdg-open "$(echo "$selected" | sed -e s/\;\;\.\*\$// | sed 's/^[ \t]*//;s/[ \t]*$//' | tr -d '\n')" > /dev/null 2>&1 & disown
+  # mpv "$(echo "$selected" | sed -e s/\;\;\.\*\$// | sed 's/^[ \t]*//;s/[ \t]*$//' | tr -d '\n')" > /dev/null 2>&1 & disown
+  # vlc "$(echo "$selected" | sed -e s/\;\;\.\*\$// | sed 's/^[ \t]*//;s/[ \t]*$//' | tr -d '\n')" > /dev/null 2>&1 & disown
+}
