@@ -1,0 +1,13 @@
+[Added Associations]
+application/pdf=mupdf.desktop;
+image/jpeg=feh.desktop;
+text/x-java=eclipse_eclipse.desktop;
+application/json=sublime_text.desktop;
+application/rdf+xml=sublime_text.desktop;
+text/x-python=sublime_text.desktop;
+video/mp4=mplayer.desktop;
+application/octet-stream=org.gnome.Software.desktop;
+application/pdf=evince.desktop;
+text/html=org.gnome.gedit.desktop;
+text/plain=firefox.desktop;
+
