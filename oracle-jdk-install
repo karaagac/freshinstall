@@ -1,1 +1,26 @@
 https://www.youtube.com/watch?v=QgQYhc0I0TE
+
+# download ana manually install java by copying /opt/
+
+
+# Check which jdk you jave
+ archlinux-java status
+ 
+ # change defauly jdk
+ sudo archlinux-java set java-17-jdk
+ 
+ note java-17 may change depends on time.
+ 
+ # check current java version
+ java -version
+ 
+ # Troubleshooting
+ 
+ # problem may continue, do this
+ export IDEA_JDK=/opt/jdk-17.0.1
+
+
+# How to change the IntelliJ IDEA JDK version?
+On the menu, clicks File -> Project Structure.
+Platform Settings -> SDKs , add and point to the JDK 13 installed folder.
+Project Settings -> Project , change both Project SDK and Project language level to JDK 13.
