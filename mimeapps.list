@@ -1,3 +1,5 @@
+# save this file under ~/.config
+
 [Added Associations]
 application/pdf=mupdf.desktop;
 image/jpeg=feh.desktop;
