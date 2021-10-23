@@ -1,7 +1,10 @@
 https://www.youtube.com/watch?v=QgQYhc0I0TE
 
-# download ana manually install java by copying /opt/
+# download ana manually install java by copying /opt/ or yout local home dir
+## create a symbolic link so you can run from anywhere
+sudo ln -s /home/xalil/idea-IC-212.5457.46/bin/idea.sh /usr/bin/idea
 
+## if you are reinstalling delete Jetbrains folder in ~/.config 
 
 # Check which jdk you jave
  archlinux-java status
@@ -15,6 +18,7 @@ https://www.youtube.com/watch?v=QgQYhc0I0TE
  java -version
  
  # Troubleshooting
+ ====================================================
  
  # remove open jdk with pamac
  pamac remove jre-openjdk jre-openjdk-headless 
