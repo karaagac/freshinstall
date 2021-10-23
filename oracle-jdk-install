@@ -16,6 +16,10 @@ https://www.youtube.com/watch?v=QgQYhc0I0TE
  
  # Troubleshooting
  
+ # remove open jdk with pamac
+ pamac remove jre-openjdk jre-openjdk-headless 
+NOTE: Add jre versions such as jre11-openjdk etc.
+ 
  # problem may continue, do this
  export IDEA_JDK=/opt/jdk-17.0.1
 
