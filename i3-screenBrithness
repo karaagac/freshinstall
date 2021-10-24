@@ -1,0 +1,11 @@
+To change your screen brightness, you can use xrandr.
+
+In order to do this, you can do:
+
+xrandr -q | grep ' connected' | head -n 1 | cut -d ' ' -f1
+That will return all the connected monitors (like LVDS-1 or DVI-D-0 for instance).
+
+Now, to change the screen brightness do the command (replace the DVI-D-0 by the precedent command output):
+
+xrandr --output eDP-1 --brightness 0.7
+For instance, this command sets the brightness to 70%.
