@@ -1,0 +1,1250 @@
+
+#+TITLE: Ibrahim Karaagacs Emacs Configuration
+#+AUTHOR: Ibrahim Karaagac
+#+DESCRIPTION: Personal emacs config file
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+#+OPTIONS: broken-links:t
+#+LaTeX_HEADER: \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+#+latex_header: \usepackage[scaled]{helvet} \renewcommand\familydefault{\sfdefault}
+
+* Table of Contents :toc:
+- [[#read-this-first---after-a-new-install][READ THIS FIRST - AFTER A NEW INSTALL]]
+- [[#package-manager][Package Manager]]
+  - [[#java-lsp-setup-and-java-path-setup][java lsp setup and java path setup]]
+- [[#general-settings][General Settings]]
+  - [[#frame-related][Frame Related]]
+  - [[#emacs-customel-file-path][emacs-custom.el file path]]
+  - [[#editor-related][Editor Related]]
+  - [[#pdf-related][Pdf Related]]
+  - [[#code-blocks][Code Blocks]]
+  - [[#abbrev-mode][Abbrev mode]]
+  - [[#split-window][Split Window]]
+  - [[#isearch][isearch]]
+  - [[#macos---make-command-as-meta][Macos - Make command as Meta]]
+- [[#language-support][Language Support]]
+  - [[#ispell-language-setting][Ispell language setting]]
+- [[#installed-packages][Installed Packages]]
+  - [[#vertico][vertico]]
+  - [[#consult][Consult]]
+  - [[#embark][embark]]
+  - [[#embark-consult][embark consult]]
+  - [[#wgrep][wgrep]]
+  - [[#initialize-vertico-embark-act-and-consult-ripgrep][Initialize vertico, embark-act and consult-ripgrep]]
+  - [[#orderless-packages][Orderless Packages]]
+  - [[#which-key][Which Key]]
+  - [[#company][Company]]
+  - [[#yasnippet][Yasnippet]]
+  - [[#evil-mode][Evil-Mode]]
+  - [[#treemacs][TreeMacs]]
+  - [[#magit][Magit]]
+  - [[#elfeed][Elfeed]]
+- [[#emacs-manually-installed][Emacs Manually Installed]]
+  - [[#summary-of-manually-installed-pacakges][Summary of Manually Installed Pacakges]]
+- [[#file-format-support][File Format Support]]
+  - [[#markdown][Markdown]]
+- [[#dictionary][Dictionary]]
+  - [[#dictorg][Dict.org]]
+- [[#fonts][Fonts]]
+  - [[#dejavu-fonts][DejaVu Fonts]]
+  - [[#jetbrains-fonts][Jetbrains Fonts]]
+- [[#functions][Functions]]
+  - [[#disable-spell-check-in-org-mode-code-blocks][Disable Spell-check in org-mode code blocks]]
+  - [[#copy-current-folder-path][Copy current folder path]]
+  - [[#copy-file-path-to-clipboard][Copy file path to clipboard]]
+  - [[#trim-current-file-name-and-add-javac-in-front-of-it][Trim Current file name and add javac in front of it]]
+  - [[#open-web-url-link-with-return][Open Web url link with return]]
+  - [[#filter-urls-and-open-with-default-browser][Filter urls and open with default browser]]
+  - [[#search-youtube][Search Youtube]]
+  - [[#search-google][Search Google]]
+  - [[#windmove][WindMove]]
+  - [[#open-file-and-run-consult-line-command][Open file and run consult-line command]]
+- [[#keybindings][Keybindings]]
+- [[#backup-files][Backup Files]]
+- [[#themes][Themes]]
+  - [[#doom-theme][Doom theme]]
+- [[#org-mode][Org-Mode]]
+  - [[#org-mode-general-settings][Org-mode General Settings]]
+- [[#org-roam][Org-Roam]]
+- [[#other-settings][Other Settings]]
+  - [[#pdf-related-1][Pdf Related]]
+- [[#lsp-and-java][Lsp and Java]]
+  - [[#java][Java]]
+  - [[#java-snippets][Java-snippets]]
+  - [[#add-java-and-lsp-support-for][Add java and lsp support for]]
+  - [[#set-up-compilation-command-for-java][Set up compilation command for Java]]
+  - [[#eldoc-mode][eldoc mode]]
+  - [[#lsp-ui][lsp-ui]]
+- [[#latex][LaTeX]]
+  - [[#install][Install]]
+  - [[#install-auctex][Install auctex]]
+  - [[#latex-config][LaTeX Config]]
+  - [[#line-wrap][Line Wrap]]
+- [[#manually-installed-packages][Manually Installed Packages]]
+  - [[#custom-packages-path][Custom packages path]]
+- [[#manually-install][Manually Install]]
+- [[#knowledge][Knowledge]]
+  - [[#tags][Tags]]
+  - [[#occur][Occur]]
+
+* READ THIS FIRST - AFTER A NEW INSTALL
+
+Remove emacs-custom.el file. This file is changes from previous installs. So it's causing problems. Everytime you install emacs config from scratch delete this file or it's content and create the file again.
+
+* Package Manager
+
+#+begin_src emacs-lisp
+
+(require 'package)
+
+;; Nice macro for updating lists in place.
+(defmacro append-to-list (target suffix)
+  "Append SUFFIX to TARGET in place."
+  `(setq ,target (append ,target ,suffix)))
+
+;; Set up emacs package archives with 'package
+(append-to-list package-archives
+                '(("melpa" . "http://melpa.org/packages/") ;; Main package archive
+                  ("melpa-stable" . "http://stable.melpa.org/packages/") ;; Some packages might only do stable releases?
+                  ("org-elpa" . "https://orgmode.org/elpa/"))) ;; Org packages, I don't use org but seems like a harmless default
+
+(package-initialize)
+
+;; Ensure use-package is present. From here on out, all packages are loaded
+;; with use-package, a macro for importing and installing packages. Also, refresh the package archive on load so we can pull the latest packages.
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq
+ use-package-always-ensure t ;; Makes sure to download new packages if they aren't already downloaded
+ use-package-verbose t) ;; Package install logging. Packages break, it's nice to know why.
+
+;; Slurp environment variables from the shell.
+;; a.k.a. The Most Asked Question On r/emacs
+(use-package exec-path-from-shell
+  :config
+  (exec-path-from-shell-initialize))
+#+end_src
+
+** java lsp setup and java path setup
+#+begin_src emacs-lisp
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+'(lsp-java-java-path "/usr/bin/java")
+'(lsp-java-server-install-dir "~/Downloads/jdt-lsp")
+'(package-selected-packages
+   '(company-box company java-snippets lsp-java exec-path-from-shell)))
+
+;;Add Java Support to Babel
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((java . t)))
+
+;; Don't prompt before running code in org
+(setq org-confirm-babel-evaluate nil)
+#+end_src
+
+
+* General Settings
+
+** Frame Related
+#+begin_src emacs-lisp
+;;To disable the menu bar, place the following line in your .emacs file:
+;;(menu-bar-mode -1)
+(menu-bar-mode 1)
+;;To disable the scrollbar, use the following line:
+(scroll-bar-mode -1)
+;;To disable the toolbar, use the following line:
+(tool-bar-mode -1)
+
+;;disable welcome screen
+(setq inhibit-startup-screen t)
+#+end_src
+
+** emacs-custom.el file path
+#+begin_src emacs-lisp
+;;Save customization to customized file rather than init file
+(setq custom-file "~/.emacs.d/emacs-custom.el")
+(load custom-file)
+#+end_src
+
+** Editor Related
+#+begin_src emacs-lisp
+;; Keep buffers automatically up to date
+(global-auto-revert-mode t)
+
+;; Display line number
+(global-display-line-numbers-mode -1)
+
+;;Relative line number
+(setq display-line-numbers-type 'relative)
+
+;; Show matching parentheses
+(show-paren-mode 1)
+
+;; Delete trailing whitespace before save
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+;;Show vertical-border in nicer way
+(set-face-attribute 'vertical-border nil :background "default" :foreground "#4e4e7d")
+(set-display-table-slot standard-display-table
+                        'vertical-border
+                        (make-glyph-code ?│))
+
+;;Show match para in customized color
+(set-face-attribute 'show-paren-match-expression nil :background "yellow")
+
+;;Disable Electric Indent
+(electric-indent-mode -1)
+
+;;Lock files everywhere
+(setq create-lockfiles nil)
+
+;;Always open symbolic links. Do not ask to open
+(setq vc-follow-symlinks nil)
+
+;;make line wrap default
+(global-visual-line-mode t)
+
+;;add file link to org file when attached
+(setq org-attach-store-link-p 'attached)
+
+;;open all titles collapsed
+;;(setq org-startup-folded t)
+
+;;savehist mode - Save minibuffer history
+(savehist-mode 1)
+#+end_src
+
+** Pdf Related
+#+begin_src emacs-lisp
+;;scroll down pdfs
+(setq doc-view-continuous t)
+#+end_src
+
+** Code Blocks
+#+begin_src emacs-lisp
+;;Auto indent code blocks
+(setq org-src-preserve-indentation t)
+(setq org-edit-src-content-indentation 0)
+
+;;Syntax highlighting inside code block
+(setq org-src-fontify-natively t)
+#+end_src
+
+** Abbrev mode
+#+begin_src emacs-lisp
+;;save abbrevs in for autocorrect
+(setq abbrev-file-name             ;; tell emacs where to read abbrev
+        "~/.emacs.d/abbrev_defs")    ;; definitions from. Open that file and save abbrevs to get autocorrected.
+;;save abbrevs whenever I save file
+(setq save-abbrevs 'silently)        ;; save abbrevs when files are saved
+
+;;make abbrevs run by default
+(setq-default abbrev-mode t)
+#+end_src
+
+** Split Window
+#+begin_src emacs-lisp
+;;Split new window to right
+;;(split-window-right)
+
+(global-set-key (kbd "C-c v")
+                (lambda ()
+                  (interactive)
+                  (split-window-right)
+                  (other-window 1)))
+#+end_src
+
+** isearch
+#+begin_src emacs-lisp
+;;isearch tweeks
+;;add isearch counter for results
+(setq isearch-lazy-count t)
+;;Add result counter before the search term
+(setq lazy-count-prefix-format "(%s/%s) ")
+;;Treat space as regular expression that matches any character between words
+(setq search-whitespace-regexp ".*?")
+;;Search case-insensitive
+(setq case-fold-search nil)
+
+#+end_src
+
+** Macos - Make command as Meta
+#+begin_src emacs-lisp
+;;; I prefer cmd key for meta
+(setq mac-option-key-is-meta nil
+      mac-command-key-is-meta t
+      mac-command-modifier 'meta
+      mac-option-modifier 'none)
+#+end_src
+
+* Language Support
+
+Emacs doesn't come with spell checker. You need to install it to OS level.
+
+** Ispell language setting
+Set usa english as default.
+#+begin_src emacs-lisp
+(setq ispell-dictionary "english")
+(setq ispell-extra-args '("--lang=en_US"))
+#+end_src
+
+
+* Installed Packages
+** vertico
+When you open minibuffer to search, vertigo gets triggered and helps completion.
+
+#+begin_src emacs-lisp
+(use-package vertico
+  :ensure t
+  :config
+  (vertico-mode))
+#+end_src
+
+** Consult
+
+Definition: provides search and navigation commands based on the Emacs completion function completing-read.
+https://github.com/minad/consult
+
+*** Code Navigation
+=consult-imenu=: Navigate code
+
+~Variable~: V then space to search
+~Function/Methods~: F space function/Method name
+
+*** Grep inside Consult
+~Mx- consult-grep
+~In search area~; #FirstSearchTerm#SearchTermToFilterMiniBuffer
+
+#+begin_src emacs-lisp
+(use-package consult
+  :ensure t
+  :bind
+  (("C-c r" . consult-ripgrep)))
+#+end_src
+
+** embark
+#+begin_src emacs-lisp
+(use-package embark
+  :ensure t
+  :bind
+  (("C-c a" . embark-act)))
+#+end_src
+
+** embark consult
+#+begin_src emacs-lisp
+(use-package embark-consult
+  ;; comes bundled with Embark; no `:ensure t' necessary
+  :after (embark consult))
+#+end_src
+
+** wgrep
+wgrep makes grep buffer editable.
+
+#+begin_src emacs-lisp
+(use-package wgrep
+  :ensure t)
+#+end_src
+
+** Initialize vertico, embark-act and consult-ripgrep
+#+begin_src emacs-lisp
+;; make sure all your packages are installed before using these
+(vertico-mode)
+(define-key global-map (kbd "C-c a") 'embark-act)
+(define-key global-map (kbd "C-c r") 'consult-ripgrep)
+#+end_src
+
+** Orderless Packages
+
+#+begin_src emacs-lisp
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+#+end_src
+
+** Which Key
+
+Which key shows which key means what.
+
+#+begin_src emacs-lisp
+(use-package which-key
+  :init
+    (which-key-mode 1)
+  :config
+  (setq which-key-side-window-location 'bottom
+	  which-key-sort-order #'which-key-key-order-alpha
+	  which-key-sort-uppercase-first nil
+	  which-key-add-column-padding 1
+	  which-key-max-display-columns nil
+	  which-key-min-display-lines 6
+	  which-key-side-window-slot -10
+	  which-key-side-window-max-height 0.25
+	  which-key-idle-delay 0.8
+	  which-key-max-description-length 25
+	  which-key-allow-imprecise-window-fit t
+	  which-key-separator " → " ))
+#+end_src
+
+** Company
+
+#+begin_src emacs-lisp
+(use-package company
+  :after lsp-mode
+  :hook (prog-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+#+end_src
+
+** Yasnippet
+
+#+begin_src emacs-lisp
+;;Add yasnippets
+(add-hook 'emacs-startup-hook (lambda () (yas-load-directory "~/.emacs.d/snippets")))
+
+;;Yasnippet
+;;https://arjanvandergaag.nl/blog/using-yasnippet-in-emacs.html
+(use-package yasnippet
+  :ensure t
+  :hook ((text-mode
+          prog-mode
+          conf-mode
+          snippet-mode) . yas-minor-mode-on)
+  :init
+  (setq yas-snippet-dir "~/.emacs.d/snippets"))
+#+end_src
+
+** Evil-Mode
+
+Vim keybindings.
+
+#+begin_src emacs-lisp
+(unless (package-installed-p 'evil)
+  (package-install 'evil))
+
+(require 'evil)
+(evil-mode 1)
+
+;; Use Tab to fold/unfold Headings (Disable C-i to jump forward to restore TAB functionality in Org mode.)
+(with-eval-after-load 'evil-maps (define-key evil-motion-state-map (kbd "TAB") nil))
+#+end_src
+
+** TreeMacs
+
+File Explorer.
+
+;;#+begin_src emacs-lisp
+(use-package treemacs
+:ensure t)
+;;#+end_src
+
+** Magit
+
+*** How To
+https://www.youtube.com/watch?v=X_iX5US1_xE
+
+**** Logs
+~Open logs~: l - open details of the log: l
+
+**** Stage
+Stage a file: s
+Unstage a file: u
+Stage all files: S
+Unstage all files: U
+
+**** Commit
+Commit: c then c again to open commit page. Type a commit message. =C-c, C-c= to save commit.
+
+**** Push
+Push a commit: p and p
+
+**** Diff
+M-x magit-diff
+
+https://magit.vc/manual/magit/Diffing.html
+
+*** Magit Code
+#+begin_src emacs-lisp
+(use-package magit
+ :bind (("C-x g" . magit)))
+#+end_src
+
+
+** Elfeed
+#+begin_src emacs-lisp
+  ;; Configure Elfeed
+  (use-package elfeed
+    :custom
+    (elfeed-db-directory
+     (expand-file-name "elfeed" user-emacs-directory))
+     (elfeed-show-entry-switch 'display-buffer)
+    :bind
+    ("C-c w e" . elfeed ))
+#+end_src
+
+
+https://www.youtube.com/watch?v=rkSZbzGpQuM
+
+#+begin_src emacs-lisp
+(setq elfeed-feeds (quote
+(
+("https://irreal.org/blog/?feed=rss2" Emacs)
+)
+))
+#+end_src
+
+
+*** Elfeed Goodies #install
+- #install Package: (package-install 'elfeed-goodies)
+
+#+begin_src emacs-lisp
+(require 'elfeed)
+(require 'elfeed-goodies)
+
+(elfeed-goodies/setup)
+
+;;Keybindings
+(evil-define-key 'normal elfeed-show-mode-map
+(kbd "J") 'elfeed-goodies/split-show-next ;;Shift j to next story
+(kbd "K") 'elfeed-goodies/split-show-prev);;Shift k to previous story
+#+end_src
+
+*** Elfeed Fonts
+#+begin_src emacs-lisp
+(setq elfeed-show-mode-hook
+      (lambda ()
+	;;(set-face-attribute 'variable-pitch (selected-frame) :font (font-spec :family "Ubuntu mono" :size 12))
+	;;Disabled that because sometimes Ubuntu font is not installed and elfeed doesn't open in new configration.
+	(setq fill-column 120)
+	(setq elfeed-show-entry-switch #'my-show-elfeed)))
+
+(defun my-show-elfeed (buffer)
+  (with-current-buffer buffer
+    (setq buffer-read-only nil)
+    (goto-char (point-min))
+    (re-search-forward "\n\n")
+    (fill-individual-paragraphs (point) (point-max))
+    (setq buffer-read-only t))
+  (switch-to-buffer buffer))
+#+end_src
+
+
+* Emacs Manually Installed
+** Summary of Manually Installed Pacakges
+
+#install with M-x package-install
+
+- Doom-themes
+- lsp-java
+- imenu-list
+- asnch
+
+*** imenu
+#+begin_src emacs-lisp
+(setq imenu-list-focus-after-activation t)
+(setq imenu-list-auto-resize t)
+#+end_src
+
+*** javadoc-lookup.el
+Search java documentation online:
+M-x package-install javadoc-lookup
+
+#+begin_src emacs-lisp
+(require 'javadoc-lookup)
+#+end_src
+
+
+* File Format Support
+
+** Markdown
+https://jblevins.org/projects/markdown-mode/
+
+#+begin_src emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown"))
+#+end_src
+
+* Dictionary
+
+** Dict.org
+
+#+begin_src emacs-lisp
+(setq dictionary-server "dict.org")
+
+;;code to prevent dictionay misbehaves
+(setq switch-to-buffer-obey-display-actions t)
+(add-to-list 'display-buffer-alist
+'("^\\*Dictionary\\*" display-buffer-in-side-window
+(side . right)
+(window-width . 0.50)))
+#+end_src
+
+* Fonts
+** DejaVu Fonts
+
+#+begin_src emacs-lisp
+(add-to-list 'default-frame-alist
+             '(font . "DejaVu Sans Mono-14"))
+#+end_src
+
+** Jetbrains Fonts
+;;#+begin_src emacs-lisp
+(set-face-attribute 'default nil
+  :font "JetBrains Mono"
+  :height 160
+  :weight 'medium)
+(set-face-attribute 'variable-pitch nil
+  :font "Ubuntu"
+  :height 160
+  :weight 'medium)
+(set-face-attribute 'fixed-pitch nil
+  :font "JetBrains Mono"
+  :height 160
+  :weight 'medium)
+;; Makes commented text and keywords italics.
+;; This is working in emacsclient but not emacs.
+;; Your font must have an italic face available.
+(set-face-attribute 'font-lock-comment-face nil
+  :slant 'italic)
+(set-face-attribute 'font-lock-keyword-face nil
+  :slant 'italic)
+
+;; This sets the default font on all graphical frames created after restarting Emacs.
+;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
+;; are not right unless I also add this method of setting the default font.
+(add-to-list 'default-frame-alist '(font . "JetBrains Mono-16"))
+
+;; Uncomment the following line if line spacing needs adjusting.
+(setq-default line-spacing 0.12)
+;;#+end_src
+
+* Functions
+
+** Disable Spell-check in org-mode code blocks
+#+begin_src emacs-lisp
+(defun disable-flyspell-in-code-blocks ()
+  "Disable flyspell in code blocks in Org mode."
+  (setq-local flyspell-mode nil)
+  (setq-local flycheck-mode nil))
+
+(add-hook 'org-mode-hook 'disable-flyspell-in-code-blocks)
+#+end_src
+
+** Copy current folder path
+#+begin_src emacs-lisp
+(defun copy-cd-current-java-folder-path ()
+  "Copy current folder path and prepend 'cd' after trimming till 'java/'."
+  (interactive)
+  (let ((folder-path (file-name-directory (or (buffer-file-name) default-directory))))
+    (when (string-match "java/" folder-path)
+      (setq folder-path (substring folder-path 0 (match-end 0))))
+    (kill-new (concat "cd " folder-path))
+    (message "Copied 'cd %s' to clipboard" folder-path)))
+
+#+end_src
+
+** Copy file path to clipboard
+#+begin_src emacs-lisp
+(defun copy-buffer-path ()
+  "Copy the current buffer's file path to the clipboard."
+  (interactive)
+  (when buffer-file-name
+    (kill-new buffer-file-name)
+    (message "File path copied to clipboard: %s" buffer-file-name)))
+#+end_src
+
+** Trim Current file name and add javac in front of it
+#+begin_src emacs-lisp
+(defun copy-file-path-trimmed ()
+  "Copy current file path and keep everything after 'java/'."
+  (interactive)
+  (let ((file-path (buffer-file-name)))
+    (when file-path
+      (setq file-path (substring file-path (+ 5 (string-match "java/" file-path))))
+      (setq file-path (concat "javac " file-path " && java " file-path)) ; Adding 'javac', "&&", file path again, and "java"
+      (setq file-path (substring file-path 0 (- (length file-path) 5))) ; Trimming trailing ".java"
+      (kill-new file-path)
+      (message "Trimmed file path copied to clipboard: %s" file-path))))
+
+#+end_src
+
+** Open Web url link with return
+#+begin_src emacs-lisp
+  (setq org-return-follows-link  t)
+#+end_src
+
+** Filter urls and open with default browser
+
+Search ~/.config/surfraw/bookmarks and filter results and open the result with default web browser.
+
+#+begin_src emacs-lisp
+(defun my/open-link-in-browser ()
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (when (re-search-forward "\\(https?://[^;]+\\) *;;" (line-end-position) t)
+      (browse-url (match-string-no-properties 1)))))
+
+(defun consult-links-org ()
+  (interactive)
+  (find-file "~/snippets/bookmarks")
+  (consult-line)
+  (my/open-link-in-browser)
+  (kill-buffer (current-buffer)))
+
+(global-set-key (kbd "C-c l") 'consult-links-org)
+#+end_src
+
+
+** Search Youtube
+
+https://emacsredux.com/blog/2013/08/26/search-youtube/
+
+#+begin_src emacs-lisp
+;;(defun er-youtube ()
+(defun s/youtube ()
+  "Search YouTube with a query or region if any."
+  (interactive)
+  (browse-url
+   (concat
+    "http://www.youtube.com/results?search_query="
+    (url-hexify-string (if mark-active
+                           (buffer-substring (region-beginning) (region-end))
+                         (read-string "Search YouTube: "))))))
+
+(global-set-key (kbd "C-c y") #'er-youtube)
+#+end_src
+
+** Search Google
+
+https://emacsredux.com/blog/2013/03/28/google/
+
+#+begin_src emacs-lisp
+;;(defun er-google ()
+(defun s/google ()
+  "Google the selected region if any, display a query prompt otherwise."
+  (interactive)
+  (browse-url
+   (concat
+    "http://www.google.com/search?ie=utf-8&oe=utf-8&q="
+    (url-hexify-string (if mark-active
+         (buffer-substring (region-beginning) (region-end))
+       (read-string "Google: "))))))
+
+(global-set-key (kbd "C-c g") #'er-google)
+#+end_src
+
+
+** WindMove
+Move between windows with Shift + Arrow keys.
+
+https://www.emacswiki.org/emacs/WindMove
+
+#+begin_src emacs-lisp
+(when (fboundp 'windmove-default-keybindings)
+  (windmove-default-keybindings))
+
+#+end_src
+
+
+
+** Open file and run consult-line command
+#+begin_src emacs-lisp
+(defun my/open-java-notes ()
+  "Open javaNotes.org and execute consult-line."
+  (interactive)
+  (find-file "~/RoamNotes/javaNotes.org")
+  (consult-line))
+
+(global-set-key (kbd "C-c j") 'my/open-java-notes) ; You can change the keybinding to your preference
+#+end_src
+
+
+
+* Keybindings
+#+begin_src emacs-lisp
+;;general
+(use-package general
+  :config
+  (general-evil-setup)
+;;===============Keybindings=======================
+  ;; set up 'SPC' as the global leader key
+  (general-create-definer dt/leader-keys
+    :states '(normal insert visual emacs)
+    :keymaps 'override
+    :prefix "SPC" ;; set leader
+    :global-prefix "M-SPC") ;; access leader in insert mode
+
+ (dt/leader-keys
+    "." '(find-file :wk "Find file")
+    "f c" '((lambda () (interactive) (find-file "~/.emacs.d/config.org")) :wk "Edit emacs init")
+    "f j" '(lambda () (interactive) (find-file "~/IdeaProjects/Yeni_General/src/main/java") :wk "Open Java dir Yeni_General")
+    "TAB TAB" '(comment-line :wk "Comment lines"));;keybindings
+
+  (dt/leader-keys
+    "b" '(:ignore t :wk "buffer");;keybindings
+    "b b" '(switch-to-buffer :wk "Switch buffer");;keybindings
+    "b i" '(ibuffer :wk "Ibuffer");;keybindings
+    "k" '(kill-this-buffer :wk "Kill this buffer");;keybindings
+    "b n" '(next-buffer :wk "Next buffer");;keybindings
+    "b p" '(previous-buffer :wk "Previous buffer");;keybindings
+    "b r" '(revert-buffer :wk "Reload buffer"));;keybindings
+
+  (dt/leader-keys
+    "e" '(:ignore t :wk "Evaluate");;keybindings
+    "e b" '(eval-buffer :wk "Evaluate elisp in buffer");;keybindings
+    "e d" '(eval-defun :wk "Evaluate defun containing or after point");;keybindings
+    "e e" '(eval-expression :wk "Evaluate and elisp expression");;keybindings
+    "e l" '(eval-last-sexp :wk "Evaluate elisp expression before point");;keybindings
+    "e r" '(eval-region :wk "Evaluate elisp in region"));;keybindings
+
+   (dt/leader-keys
+    "h" '(:ignore t :wk "Help")
+    "h f" '(describe-function :wk "Describe function");;keybindings
+    "h v" '(describe-variable :wk "Describe variable");;keybindings
+    ;;"h r r" '((lambda () (interactive) (load-file "~/.config/emacs/init.el")) :wk "Reload emacs config"))
+    "h r r" '(reload-init-file :wk "Reload emacs config"));;keybindings
+
+   (dt/leader-keys
+    "t" '(:ignore t :wk "Toggle");;keybindings
+    "t l" '(display-line-numbers-mode :wk "Toggle line numbers");;keybindings
+    "t t" '(visual-line-mode :wk "Toggle truncated lines"));;keybindings
+
+   (dt/leader-keys
+    "bb" '(bookmark-jump :wk "Jump to Bookmarks");;keybindings
+    "ba" '(bookmark-set :wk "Bookmark Add"));;keybindings
+
+   (dt/leader-keys
+    "as" '(yas-new-snippet :wk "Add yasnippet");;keybindings
+    "ss" '(yas-describe-tables :wk "Show Yasnippets"));;keybindings
+
+   (dt/leader-keys
+    "ts" '(consult-org-heading :wk "Search org title/headers");;keybindings
+    "tf" '(org-match-sparse-tree :wk "Tag Find");;keybindings
+    "th" '(org-fold-hide-sublevels :wk "Collapse title/headers"));;keybindings
+
+   (dt/leader-keys
+    "sc" '(org-babel-mark-block :wk "Select code inside code block");;keybindings
+    "ic" '(indent-region :wk "Indent Code Block"));;keybindings
+
+   (dt/leader-keys
+    "nr" '(narrow-to-region :wk "Narrow a Region"));;keybindings
+   ;;For widening, use widen command.
+
+   ;;(dt/leader-keys
+   ;; "es" '(eshell :wk "Eshell"))
+
+   (dt/leader-keys
+    "ds" '(dictionary-lookup-definition :wk "Dictionary Search"));;keybindings
+
+   (dt/leader-keys
+    "1" '(delete-other-windows :wk "Close all other windows"));;keybindings
+
+   (dt/leader-keys
+    "p" '(clipboard-yank :wk "Paste"));;keybindings
+
+   (dt/leader-keys
+   "nl" '(org-roam-buffer-toggle :wk "Roam Toggle");;keybindings
+   "nf" '(org-roam-node-find :wk "Roam Note Find");;keybindings
+   "ni" '(org-roam-node-insert :wk "Roam Note Insert");;keybindings
+   "cid" '(org-id-get-create :wk "Create org-roam Id");;keybindings
+   "nc" '(completion-at-point :wk "Roam Note Completion"));;keybindings
+
+   (dt/leader-keys
+    "w" '(save-buffer :wk "Save File"));;keybindings
+
+   (dt/leader-keys
+    "gd" '(lsp-find-definition :wk "Go to Definition"))  ;;keybindings
+
+   (dt/leader-keys
+    "vv" '(vterm :wk "vterm Terminal")  ;;keybindings
+    "il" '(imenu-list :wk "Imenu-list")  ;;keybindings
+    "fp" '(copy-file-path-trimmed :wk "Copy Trimmed File Path")  ;;keybindings
+    "dp" '(copy-cd-current-java-folder-path :wk "Copy Directory Name"))  ;;keybindings
+
+   (dt/leader-keys ;;consult
+    "co" '(consult-outline :wk "Find in Current Buffer Headings - Consult") ;;keybindings
+    "cr" '(consult-ripgrep :wk "Find all files - Consult");;keybindings
+    "cl" '(consult-line :wk "Find in Current Buffer - Consult") ;;keybindings
+    "cf" '(consult-find :wk "Find a File Inside a Whole Directory - consult") ;;keybindings
+    "cw" '(consult-links-org :wk "Open web links") ;;Don't change the command!  ;;keybindings
+   ;;unrealted to consult but starts with c
+    "cc" '(set-java-compile-command :wk "Compile Java File")  ;;keybindings
+    "cv" '(compile :wk "Compile File Now")) ;;keybindings
+
+   (dt/leader-keys
+    "ir" '(indent-region :wk "Indent Code Block"))  ;;keybindings
+
+   (dt/leader-keys
+    "ms" '(magit-status :wk "Magit Status"))  ;;keybindings
+
+   (dt/leader-keys
+    "rl" '(emacs-run-launcher :wk "Rofi like emacs launcher"))  ;;keybindings
+
+   (dt/leader-keys
+    "lu" '(lsp-ui-doc-glance :wk "Enable lsp-ui popup"))  ;;keybindings
+)
+#+end_src
+
+* Backup Files
+
+#+begin_src emacs-lisp
+(setq backup-directory-alist '(("." . "~/temp/backup/")))
+(setq auto-save-file-name-transforms '((".*" "~/temp/backup/" t)))
+
+;;  backup-by-copying t    ; Don't delink hardlinks
+;;  version-control t      ; Use version numbers on backups
+;;  delete-old-versions t  ; Automatically delete excess backups
+;;  kept-new-versions 20   ; how many of the newest versions to keep
+;;  kept-old-versions 5    ; and how many of the old
+;;  )
+#+end_src
+* Themes
+
+Misteriso is buildin and has good code syntax highlighting.
+
+======================Doom Theme=========================
+** Doom theme
+#install #download
+
+Install M-x: list-packages - doom-themes
+
+Then M-x: customize-theme
+
+#+begin_src emacs-lisp
+  (load-theme 'doom-one t)
+#+end_src
+
+* Org-Mode
+** Org-mode General Settings
+
+*** Enabling Table of Contents
+#+begin_src emacs-lisp
+(use-package toc-org
+    :commands toc-org-enable
+    :init (add-hook 'org-mode-hook 'toc-org-enable))
+#+end_src
+
+*** Enabling Org Bullets
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook 'org-indent-mode)
+(use-package org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src
+
+*** Zoom in / out
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-=") 'text-scale-increase)
+(global-set-key (kbd "C--") 'text-scale-decrease)
+#+end_src
+
+*** Give Page Break after Table of Contents in pdf LaTex
+#+begin_src emacs-lisp
+(setq org-latex-toc-command "\\tableofcontents \\clearpage")
+#+end_src
+
+*** Make web links blue in pdf LaTeX export
+#+begin_src emacs-lisp
+(setq org-latex-packages-alist '("\\hypersetup{colorlinks=true,linkcolor=blue}"))
+#+end_src
+
+*** replace -  with a centered-dot character in lists
+https://zzamboni.org/post/beautifying-org-mode-in-emacs/
+
+#+begin_src emacs-lisp
+(font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+#+end_src
+
+*** hide the emphasis markup
+#+begin_src emacs-lisp
+(setq org-hide-emphasis-markers t)
+#+end_src
+
+*** Increase line spacing
+#+begin_src emacs-lisp
+(setq-default line-spacing 2)
+#+end_src
+
+*** org-agenda
+Location of org-agenda file and other settings.
+
+More info: https://redgreenrepeat.com/2021/04/09/org-mode-agenda-getting-started-scheduled-items-and-todos/
+
+#+begin_src emacs-lisp
+(setq org-agenda-files '("~/org"))
+#+end_src
+
+
+* Org-Roam
+
+https://systemcrafters.net/build-a-second-brain-in-emacs/getting-started-with-org-roam/
+
+#+begin_src emacs-lisp
+(use-package org-roam
+  :ensure t
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/RoamNotes")
+  (org-roam-completion-everywhere t)
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert)
+         :map org-mode-map
+         ("C-M-i"    . completion-at-point))
+  :config
+  (org-roam-setup))
+#+end_src
+
+* Other Settings
+
+** Pdf Related
+http://www.idryman.org/blog/2013/05/20/emacs-and-pdf/
+
+- This is for pdf. Don't remove.
+- Install ghostscript
+
+*** Highligh docview results
+#+begin_src emacs-lisp
+;; Customize search result highlighting
+(custom-set-faces
+ '(lazy-highlight ((t (:background "yellow" :foreground "black")))))
+#+end_src
+
+*** Docview Keybindings to move page down / up in pdf
+
+#+begin_src emacs-lisp
+;; view docs keybindings for pdf
+(fset 'doc-prev "\C-xo\C-x[\C-xo")
+(fset 'doc-next "\C-xo\C-x]\C-xo")
+(global-set-key (kbd "M-[") 'doc-prev)
+(global-set-key (kbd "M-]") 'doc-next)
+
+#+end_src
+
+
+* Lsp and Java
+
+Note: This is working lsp-java config. Put it inside config.org
+
+https://www.youtube.com/watch?v=_Ilw8k_zHT0
+
+- Download:https://download.eclipse.org/jdtls/snapshots/?d  select a snapshot and place it somewhere in your pc. Copy the path. #download
+
+- Set up: #install
+1. M-x : Customize-group Enter :lsp-java (If it doesn't work, restart a few times.)
+2. Find ~Lsp Java Server Install Dir~ and add full path of above download here.
+3. Fins ~Lsp Java Java Path~ and add Java path. Use whereis java to find it.
+
+Configure above packages:
+M-x: configure-group -> lsp-java
+- Set Path: Lsp Java Server Install Dir: set it to whereever you downloaded eclipse lsp server
+- Set java path: Lsp Java Java Path: set it to wherever java is installed. Find it with "whereis java" command
+================================
+
+*** Start lsp-server
+M-x: lsp-mode
+
+** Java
+#+begin_src emacs-lisp
+(use-package java
+  :ensure nil
+  :after lsp-java
+  :bind (:map java-mode-map ("C-c i" . lsp-java-add-import)))
+#+end_src
+
+** Java-snippets
+#+begin_src emacs-lisp
+(use-package java-snippets)
+#+end_src
+
+** Add java and lsp support for
+
+#+begin_src emacs-lisp
+(require 'lsp-mode)
+(add-hook 'prog-mode-hook #'lsp)
+#+end_src
+
+** Set up compilation command for Java
+
+- C-c cc to compile.
+- M-x: compile to compile and run a Java class.
+
+#+begin_src emacs-lisp
+(defun set-java-compile-command ()
+  (interactive)
+  (if buffer-file-name
+      (setq compile-command
+            (concat "javac " (file-name-nondirectory buffer-file-name) " && java "
+                    ;;(file-name-sans-extension (file-name-nondirectory buffer-file-name))))
+                    (file-name-sans-extension (file-name-nondirectory buffer-file-name)) ".java"))
+    (setq compile-command "echo 'Buffer is not visiting a file or file is not saved'")))
+
+(global-set-key (kbd "C-c cc") 'set-java-compile-command)
+
+#+end_src
+
+** eldoc mode
+
+Pop-up description of methods similar to what IntelliJ provides.
+
+#+begin_src emacs-lisp
+(add-hook 'java-mode-hook 'lsp)
+(add-hook 'java-mode-hook 'eldoc-mode)
+#+end_src
+
+** lsp-ui
+Provides intellij like popup for method or class description.
+
+You can invoke the LSP UI popups manually. For example, to bring up documentation for a symbol at point, use lsp-ui-doc-glance.
+
+Enable lsp-ui for Java files:
+
+#+begin_src
+;; Enable LSP for Java files
+(add-hook 'java-mode-hook #'lsp-deferred)
+(add-hook 'java-mode-hook #'lsp-ui-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode
+  :config
+  (setq lsp-ui-sideline-show-hover t
+        lsp-ui-sideline-show-diagnostics t
+        lsp-ui-sideline-ignore-duplicate t
+        lsp-ui-doc-enable t
+        lsp-ui-doc-use-childframe t
+        lsp-ui-doc-position 'at-point
+        lsp-ui-doc-alignment 'window))
+#+end_src
+
+
+* LaTeX
+** Install
+
+pacman -Syu texlive
+
+otherwise emacs Can't export latex files to pdf.
+
+** Install auctex
+#+begin_src emacs-lisp
+(use-package tex
+  :ensure auctex)
+#+end_src
+
+** LaTeX Config
+
+Open pdf file in emacs side panel: =C-c C-e l o=
+
+#+begin_src emacs-lisp
+;; Use AUCTeX for LaTeX editing
+(use-package tex
+  :ensure auctex
+  :config
+  (setq TeX-auto-save t
+        TeX-parse-self t
+        TeX-save-query nil
+        TeX-PDF-mode t))
+
+;; Customize LaTeX settings
+(setq-default TeX-engine 'pdflatex) ; Use pdflatex by default
+(setq-default TeX-master nil) ; Ask for master file on compilation
+
+;; Set default font size to 12pt and document type to article
+(add-hook 'LaTeX-mode-hook
+          (lambda ()
+            (setq-default TeX-engine 'pdflatex)
+            ;; Set margins
+            (setq-default LaTeX-article-default-options '("12pt" "a4paper"))
+            (add-to-list 'LaTeX-paragraph-commands "subparagraph")
+            (add-to-list 'LaTeX-item-commands '("subsubparagraph" . LaTeX-item-subsubparagraph))
+            (setq-default LaTeX-default-options-alist
+                          (append '(("a4paper" "a4paper" nil))
+                                  '(("12pt" "12pt" nil))))
+            (setq-default LaTeX-default-packages-alist
+                          (append '(("" "geometry" t)
+                                    ("" "graphicx" t))
+                                  LaTeX-default-packages-alist))))
+
+#+end_src
+
+** Line Wrap
+#+begin_src emacs-lisp
+(add-to-list 'org-latex-packages-alist '("" "listings" nil))
+(setq org-latex-listings t)
+(setq org-latex-listings-options '(("breaklines" "true")))
+#+end_src
+
+* Manually Installed Packages
+
+** Custom packages path
+
+Download all custom .el packages in this directory.
+
+Then add =(require 'nameOfPackage)=
+
+*** Custom-packages
+#+begin_src emacs-lisp
+(add-to-list 'load-path "~/.emacs.d/custom-packages")
+#+end_src
+
+
+* Manually Install
+- vterm
+
+
+* Knowledge
+
+** Tags
+https://orgmode.org/manual/Tag-Searches.html
+
+** Occur
+
+https://www.masteringemacs.org/article/searching-buffers-occur-mode
+M-x occur to search current buffer only.
+
+Weblink has code for searching all open buffers also.
+https://www.youtube.com/watch?v=zxS3zXwV0PU
+
+~Summary~:
+- It's grep like tool for terminal. It can be String of characters or regex. It produces a result and you displays in a new buffer.
+- It works in open buffers. Not files in a directory. Files must be open in buffer.
+- It doesn't matter where you are in occur buffer, it will search all buffer.
+
+~Start Occur~: M-x occur
+
+~Navigate inbetween results~: M-x n, M-x p
+
+Also in occur buffer you can only use n and p to navigate between results.
+
+~Open last successful search in occur~: M-s o
+~Tweak/change last successful search while in occor buffer~: M-n
+~Edit occur buffer~: e
+
+*** Edit Mode
+You can also turn that read-only buffer to editable state and change the results.
+
+Hit e to start editing. When you are done C-c, C-c to done editin/exit.
+
+You can also envoke ibuffer list and choose file you are editing and hit = sign to see diff.
